@@ -1,0 +1,42 @@
+swagger: "2.0"
+info:
+  title: beego Test API
+  description: beego has a very cool tools to autogenerate documents for your API
+  version: 1.0.0
+  termsOfService: http://beego.me/
+  contact:
+    email: astaxie@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+basePath: /v1
+paths:
+  /neo4j/search:
+    post:
+      tags:
+      - neo4j
+      description: 登陆验证
+      operationId: Neo4jController.Search
+      parameters:
+      - in: body
+        name: body
+        description: 查询语句
+        required: true
+        schema:
+          $ref: '#/definitions/models.Neo4jPost'
+      responses:
+        "200":
+          description: '{string} models.Neo4jPost.Cql'
+        "403":
+          description: body is empty
+definitions:
+  models.Neo4jPost:
+    title: Neo4jPost
+    type: object
+    properties:
+      cql:
+        type: string
+tags:
+- name: neo4j
+  description: |
+    后端系统认证

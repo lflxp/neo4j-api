@@ -15,15 +15,11 @@ import (
 
 func init() {
 	ns := beego.NewNamespace("/v1",
-		beego.NSNamespace("/object",
+		beego.NSNamespace("/neo4j",
 			beego.NSInclude(
-				&controllers.ObjectController{},
+				&controllers.Neo4jController{},
 			),
-		),
-		beego.NSNamespace("/user",
-			beego.NSInclude(
-				&controllers.UserController{},
-			),
+			beego.NSRouter("/*", &controllers.BaseController{}, "options:Options"),
 		),
 	)
 	beego.AddNamespace(ns)
