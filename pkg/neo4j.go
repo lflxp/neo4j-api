@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/astaxie/beego"
@@ -60,7 +61,8 @@ func ReadTran(cql string, arg map[string]interface{}) (*models.Neo4j, error) {
 		if err != nil {
 			return rs, err
 		}
-
+		// node剔重
+		node_map := map[string]interface{}{}
 		node := []interface{}{}
 		relation := []interface{}{}
 		str := []interface{}{}
@@ -84,24 +86,26 @@ func ReadTran(cql string, arg map[string]interface{}) (*models.Neo4j, error) {
 				// 	panic(err)
 				// }
 				// fmt.Println(string(data))
-				node_map := map[int64]map[string]interface{}{}
+
 				for n, x := range result.Record().Keys() {
 					var tmp_rs map[string]interface{}
 					rs := result.Record().GetByIndex(n)
 					switch v := rs.(type) {
 					case neo4j.Node:
 						// fmt.Println("node")
-						if _, ok := node_map[rs.(neo4j.Node).Id()]; !ok {
+						if _, ok := node_map[fmt.Sprintf("%d", rs.(neo4j.Node).Id())]; !ok {
+							fmt.Println(fmt.Sprintf("-%d-", rs.(neo4j.Node).Id()), node_map)
 							tmp_rs = map[string]interface{}{}
 							tmp_rs["group"] = x
 							tmp_rs["props"] = rs.(neo4j.Node).Props()
 							tmp_rs["id"] = rs.(neo4j.Node).Id()
+							// tmp_rs["name"] = rs.(neo4j.Node).Id()
 							tmp_rs["labels"] = rs.(neo4j.Node).Labels()
 							tmp_rs["type"] = "node"
 							// ss, _ := json.Marshal(tmp_rs)
 							// fmt.Println(string(ss))
 							// node = append(node, tmp_rs)
-							node_map[rs.(neo4j.Node).Id()] = tmp_rs
+							node_map[fmt.Sprintf("%d", rs.(neo4j.Node).Id())] = tmp_rs
 						}
 
 					case neo4j.Relationship:
@@ -137,17 +141,25 @@ func ReadTran(cql string, arg map[string]interface{}) (*models.Neo4j, error) {
 				// return result.Record().GetByIndex(0), nil
 				// return "ok", nil
 
-				for _, v := range node_map {
-					node = append(node, v)
-				}
 			} else {
 				break
 			}
 		}
 
+		// 生成node
+		for k, v := range node_map {
+			fmt.Println("id " + k)
+			node = append(node, v)
+		}
 		// 文本结果
 		rs_tmp.Str = str
 		rs_tmp.Nodes = node
+
+		node_string, _ := json.Marshal(node)
+
+		fmt.Println(string(node_string))
+		relation_string, _ := json.Marshal(relation)
+		fmt.Println(string(relation_string))
 
 		// 去除没有在links的node 不行 需由前端自行剔除
 		// link获取node的index
