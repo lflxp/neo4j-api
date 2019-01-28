@@ -66,6 +66,7 @@ func ReadTran(cql string, arg map[string]interface{}) (*models.Neo4j, error) {
 		node := []interface{}{}
 		relation := []interface{}{}
 		str := []interface{}{}
+		ints := []interface{}{}
 
 		for {
 			if result.Next() {
@@ -130,8 +131,13 @@ func ReadTran(cql string, arg map[string]interface{}) (*models.Neo4j, error) {
 						// ss, _ := json.Marshal(tmp_rs)
 						// fmt.Println(string(ss))
 						str = append(str, tmp_rs)
-					// case int64:
-					// 	tmp_rs["length"] = rs
+					case int64:
+						// 	tmp_rs["length"] = rs
+						tmp_rs = map[string]interface{}{}
+						tmp_rs["group"] = x
+						tmp_rs["value"] = rs
+						tmp_rs["type"] = "int64"
+						ints = append(ints, tmp_rs)
 					default:
 						fmt.Println("unknow type", v)
 					}
@@ -154,6 +160,7 @@ func ReadTran(cql string, arg map[string]interface{}) (*models.Neo4j, error) {
 		// 文本结果
 		rs_tmp.Str = str
 		rs_tmp.Nodes = node
+		rs_tmp.Ints = ints
 
 		node_string, _ := json.Marshal(node)
 
